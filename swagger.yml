@@ -1,0 +1,307 @@
+openapi: 3.0.1
+info:
+  title: API
+  contact:
+    email: alek.kachmazov@yandex.ru
+  version: 1.0.0
+tags:
+  - name: auth
+    description: Авторизация...
+  - name: collections
+    description: Коллекции
+  - name: questions
+    description: Вопросы
+  - name: answers
+    description: Ответы
+paths:
+  /collections:
+    get:
+      tags:
+        - collections
+      summary: Получение всех коллекций
+      responses:
+        '200':
+          description: Успешное получение списка
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionInfo'
+        '500':
+          description: Ошибка сервера
+          content: {}
+    post:
+      tags:
+        - collections
+      summary: Создание новой коллекции
+      requestBody:
+        description: Обязательные поля модели для инициализации коллекции
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: 
+                  type: string
+                  description: Название коллекции
+                description: 
+                  type: string
+                  description: Описание коллекции
+      responses:
+        '200':
+          description: Успешное создание коллекции
+          content: {}
+        '500':
+          description: Ошибка сервера
+          content: {}
+      security:
+        - bearer_auth: []
+  '/collections/{collectionId}':
+    get:
+        tags:
+          - collections
+        summary: Получение коллекции по ID
+        description: Возвращает модель найденной коллекции
+        parameters:
+        - name: collectionId
+          in: path
+          description: ID коллекции
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение информации о коллекции
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CollectionInfo'
+          '404':
+            description: Коллекция не найдена
+            content: {}
+  '/collections/{collectionId}/questions':
+    get:
+        tags:
+          - collections
+        summary: Получение вопросов коллекции по ID коллекции
+        description: Возвращает массив вопросов, привязанных к коллекции
+        parameters:
+        - name: collectionId
+          in: path
+          description: ID коллекции
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение информации о коллекции
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Question'
+          '404':
+            description: Коллекция не найдена
+            content: {}
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Авторизация
+      description: Возвращает JWT токен
+      requestBody:
+        description: Username и пароль пользователя
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: 
+                  type: string
+                  description: Username
+                  example: root
+                password: 
+                  type: string
+                  description: Пароль
+                  example: root
+      responses:
+        '200':
+          description: Успешная авторизация
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: 
+                    type: string
+                    description: JWT token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJ1c2VySWQiOiJzb21lLXVzZXItaWQiLCJpYXQiOjE1MTYyMzkwMjJ9.YfS9m_AIm8LjkEZKkyYWREMfjhSvcVUXIkHsZvc76DQ"
+        '400':
+          description: Ошибка авторизации из-за неверных данных
+          content: {}
+        '500':
+          description: Ошибка сервера
+          content: {}
+  /auth/check:
+    get:
+      tags:
+        - auth
+      summary: Проверка авторизации
+      description: Проверает, активен ли токен
+      responses:
+        '200':
+          description: Успешная авторизация
+          content: {}
+        '401':
+          description: Пользователь не авторизован
+          content: {}
+      security:
+        - bearer_auth: []
+  /questions:
+      get:
+        tags:
+          - questions
+        summary: Получение всех вопросов
+        responses:
+          '200':
+            description: Успешное получение списка
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Question'
+          '500':
+            description: Ошибка сервера
+            content: {}
+  '/questions/{questionId}':
+    get:
+        tags:
+          - questions
+        summary: Получение вопроса по ID
+        description: Возвращает модель найденного вопроса
+        parameters:
+        - name: questionId
+          in: path
+          description: ID вопроса
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение информации о вопросе
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Question'
+          '404':
+            description: Вопрос не найден
+            content: {}
+  /answers:
+      get:
+        tags:
+          - answers
+        summary: Получение всех ответов
+        responses:
+          '200':
+            description: Успешное получение списка
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Answer'
+          '500':
+            description: Ошибка сервера
+            content: {}
+  '/answers/{answerId}':
+    get:
+        tags:
+          - answers
+        summary: Получение ответа по ID
+        description: Возвращает модель найденного ответа
+        parameters:
+        - name: answerId
+          in: path
+          description: ID ответа
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение информации об ответе
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Answer'
+          '404':
+            description: Ответ не найден
+            content: {}
+components:
+  schemas:
+    CollectionInfo:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+        title: 
+          type: string
+          description: Название коллекции
+        description: 
+          type: string
+          description: Описание коллекции
+        author_id:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+    Question:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+        data: 
+          type: string
+          description: Формулировка вопроса
+        description: 
+          type: string
+          description: Описание вопроса (опциональный параметр)
+        author_id:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+    Answer:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+        data: 
+          type: string
+          description: Формулировка ответа
+        description: 
+          type: string
+          description: Комментарий к ответу (опциональный параметр)
+        author_id:
+          type: string
+          format: uuid
+        question_id:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearer_auth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
