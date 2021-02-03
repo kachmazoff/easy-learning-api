@@ -1,4 +1,4 @@
-import { ICollectionInfo, IQuestion } from "../models";
+import { IAnswer, ICollectionInfo, IQuestion } from "../models";
 import { ICollectionsRepository } from "src/repositories/CollectionsRepository";
 import {
   ICollectionFull,
@@ -27,6 +27,16 @@ export interface ICollectionsService {
   deleteQuestionsFromCollection(
     collectionId: string,
     questionsIds: string[]
+  ): Promise<void>;
+
+  getSelectedAnswersForQuestion(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]>;
+  setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
   ): Promise<void>;
 }
 
@@ -84,6 +94,28 @@ export class CollectionsService implements ICollectionsService {
     return this.collectionsRepo.deleteQuestionsFromCollection(
       collectionId,
       questionsIds
+    );
+  }
+
+  async getSelectedAnswersForQuestion(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]> {
+    return await this.collectionsRepo.getSelectedAnswersForQuestion(
+      collectionId,
+      questionId
+    );
+  }
+
+  async setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
+  ) {
+    this.collectionsRepo.setAnswersForQuestion(
+      collectionId,
+      questionId,
+      answersIds
     );
   }
 }
