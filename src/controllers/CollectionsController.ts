@@ -28,6 +28,11 @@ export class CollectionsController implements IController {
       requiredAuthMiddleware,
       this.addQuestions
     );
+
+    this.router.get(
+      `${this.path}/:id/questions/:questionId/answers`,
+      this.getSelectedAnswers
+    );
     this.router.post(
       `${this.path}/:id/questions/:questionId/answers`,
       requiredAuthMiddleware,
@@ -159,6 +164,17 @@ export class CollectionsController implements IController {
     } catch (error) {
       res.sendStatus(500);
     }
+  };
+
+  private getSelectedAnswers = async (req: Request, res: Response) => {
+    const collectionId = req.params.id as string;
+    const questionId = req.params.questionId as string;
+
+    const answers = await collectionsService.getSelectedAnswersForQuestion(
+      collectionId,
+      questionId
+    );
+    res.json(answers);
   };
 
   private selectAnswersForQuestion = async (

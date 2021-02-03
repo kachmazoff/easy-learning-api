@@ -41,6 +41,10 @@ export interface ICollectionsRepository {
     questionsIds: string[]
   ): Promise<void>;
 
+  getSelectedAnswersForQuestion(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]>;
   setAnswersForQuestion(
     collectionId: string,
     questionId: string,
@@ -229,6 +233,23 @@ export class CollectionsRepository implements ICollectionsRepository {
 
     const sqlDeleteQuestions = `DELETE FROM \`${this.COLLECTION_QUESTION}\` WHERE id IN ${relationsArr}`;
     await query(sqlDeleteQuestions);
+  }
+
+  async getSelectedAnswersForQuestion(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]> {
+    const sqlGetRelIds = `SELECT id FROM ${this.COLLECTION_QUESTION} WHERE collection_id='${collectionId}' AND question_id='${questionId}'`;
+    const relations = (await query<{ id: string }[]>(sqlGetRelIds)) || [];
+    const rel_id = relations[0]?.id;
+    if (!rel_id) {
+      throw new Error("Question not in collection");
+    }
+
+    const sqlGetAnswers = `SELECT ans.id as id, ans.data as data, ans.description as description, ans.author_id as author_id FROM (SELECT * FROM ${this.REL_COLLECTION_ANSWERS} WHERE rel_id='${rel_id}') rels JOIN ANSWERS ans ON rels.answer_id=ans.id`;
+    const answers = await query<IAnswer[]>(sqlGetAnswers);
+
+    return !!answers ? answers : [];
   }
 
   // TODO: refactoring
