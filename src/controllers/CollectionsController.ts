@@ -23,7 +23,16 @@ export class CollectionsController implements IController {
     this.router.get(`${this.path}/:id/qas`, this.getQAs);
 
     this.router.get(`${this.path}/:id/questions`, this.getQuestions);
-    this.router.post(`${this.path}/:id/questions`, this.addQuestions);
+    this.router.post(
+      `${this.path}/:id/questions`,
+      requiredAuthMiddleware,
+      this.addQuestions
+    );
+    this.router.post(
+      `${this.path}/:id/questions/:questionId/answers`,
+      requiredAuthMiddleware,
+      this.selectAnswersForQuestion
+    );
     this.router.delete(
       `${this.path}/:id/questions`,
       requiredAuthMiddleware,
@@ -148,6 +157,27 @@ export class CollectionsController implements IController {
       );
       res.sendStatus(200);
     } catch (error) {
+      res.sendStatus(500);
+    }
+  };
+
+  private selectAnswersForQuestion = async (
+    req: RequestWithUser,
+    res: Response
+  ) => {
+    const collectionId = req.params.id as string;
+    const questionId = req.params.questionId as string;
+
+    const answersIds = req.body as string[];
+
+    try {
+      collectionsService.setAnswersForQuestion(
+        collectionId,
+        questionId,
+        answersIds
+      );
+    } catch (error) {
+      console.error(error);
       res.sendStatus(500);
     }
   };

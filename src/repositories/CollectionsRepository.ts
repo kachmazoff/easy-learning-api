@@ -40,6 +40,12 @@ export interface ICollectionsRepository {
     collectionId: string,
     questionsIds: string[]
   ): Promise<void>;
+
+  setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
+  ): Promise<void>;
 }
 
 export class CollectionsRepository implements ICollectionsRepository {
@@ -209,9 +215,9 @@ export class CollectionsRepository implements ICollectionsRepository {
     );
     questionsArr = "(" + questionsArr + ")";
 
-    const sqlGetRelIds = `SELECT id FROM COLLECTION_QUESTION WHERE collection_id='${collectionId}' AND question_id IN ${questionsArr}`;
+    const sqlGetRelIds = `SELECT id FROM ${this.COLLECTION_QUESTION} WHERE collection_id='${collectionId}' AND question_id IN ${questionsArr}`;
     const relations = (await query<{ id: string }[]>(sqlGetRelIds)) || [];
-    console.log({ relations });
+
     let relationsArr = "";
     relations.forEach(
       (rel, index) => (relationsArr += (index > 0 ? ", " : "") + `'${rel.id}'`)
@@ -223,7 +229,40 @@ export class CollectionsRepository implements ICollectionsRepository {
 
     const sqlDeleteQuestions = `DELETE FROM \`${this.COLLECTION_QUESTION}\` WHERE id IN ${relationsArr}`;
     await query(sqlDeleteQuestions);
+  }
 
-    console.log({ sqlGetRelIds, sqlDeleteAnswers, sqlDeleteQuestions });
+  // TODO: refactoring
+  async setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
+  ) {
+    const sqlGetRelIds = `SELECT id FROM ${this.COLLECTION_QUESTION} WHERE collection_id='${collectionId}' AND question_id='${questionId}'`;
+    const relations = (await query<{ id: string }[]>(sqlGetRelIds)) || [];
+    const rel_id = relations[0]?.id;
+    if (!rel_id) {
+      throw new Error("Question not in collection");
+    }
+
+    const sqlGetAnswers = `SELECT answer_id from ${this.REL_COLLECTION_ANSWERS} WHERE \`rel_id\`='${rel_id}'`;
+    const currAnswers =
+      (await query<{ answer_id: string }[]>(sqlGetAnswers)) || [];
+
+    const currAnswersIds = currAnswers.map((x) => x.answer_id);
+
+    const needToDelete = currAnswersIds.filter((x) => !answersIds.includes(x));
+    const needToAdd = answersIds.filter((x) => !currAnswersIds.includes(x));
+
+    const deleteArr: string = "(" + needToDelete.join(", ") + ")";
+    const sqlDeleteQuery = `DELETE FROM ${this.REL_COLLECTION_ANSWERS} WHERE \`rel_id\`='${rel_id}' AND answer_id IN ${deleteArr}`;
+    await query(sqlDeleteQuery);
+
+    let insertValues = "";
+    needToAdd.forEach(
+      (id, index) =>
+        (insertValues += (index > 0 ? ", " : "") + `('${rel_id}', '${id}')`)
+    );
+    const sqlInsertQuery = `INSERT INTO \`${this.REL_COLLECTION_ANSWERS}\` (rel_id, answer_id) VALUES ${insertValues}`;
+    await query(sqlInsertQuery);
   }
 }

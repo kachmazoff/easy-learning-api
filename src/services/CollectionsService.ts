@@ -28,6 +28,12 @@ export interface ICollectionsService {
     collectionId: string,
     questionsIds: string[]
   ): Promise<void>;
+
+  setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
+  ): Promise<void>;
 }
 
 export class CollectionsService implements ICollectionsService {
@@ -84,6 +90,18 @@ export class CollectionsService implements ICollectionsService {
     return this.collectionsRepo.deleteQuestionsFromCollection(
       collectionId,
       questionsIds
+    );
+  }
+
+  async setAnswersForQuestion(
+    collectionId: string,
+    questionId: string,
+    answersIds: string[]
+  ) {
+    this.collectionsRepo.setAnswersForQuestion(
+      collectionId,
+      questionId,
+      answersIds
     );
   }
 }
