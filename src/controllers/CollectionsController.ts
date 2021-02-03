@@ -192,6 +192,7 @@ export class CollectionsController implements IController {
         questionId,
         answersIds
       );
+      res.sendStatus(200);
     } catch (error) {
       console.error(error);
       res.sendStatus(500);
