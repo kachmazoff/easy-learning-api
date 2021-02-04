@@ -101,9 +101,44 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/Question'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Question'
           '404':
             description: Коллекция не найдена
+            content: {}
+  '/collections/{collectionId}/questions/{questionId}/answers':
+    get:
+        tags:
+          - collections
+        summary: Получение выбранных ответов в рамках коллекции
+        description: Возвращает массив ответов на данный вопрос, которые выбраны для данной коллекции
+        parameters:
+        - name: collectionId
+          in: path
+          description: ID коллекции
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: questionId
+          in: path
+          description: ID вопроса
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение массива ответов
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Answer'
+          '500':
+            description: Ошибка сервера
             content: {}
   /auth/login:
     post:
@@ -199,6 +234,32 @@ paths:
                   $ref: '#/components/schemas/Question'
           '404':
             description: Вопрос не найден
+            content: {}
+  '/questions/{questionId}/answers':
+    get:
+        tags:
+          - questions
+        summary: Получение ответов на вопрос
+        description: Возвращает массив ответов на данный вопрос
+        parameters:
+        - name: questionId
+          in: path
+          description: ID вопроса
+          required: true
+          schema:
+            type: string
+            format: uuid
+        responses:
+          '200':
+            description: Успешное получение массива ответов
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Answer'
+          '500':
+            description: Ошибка сервера
             content: {}
   /answers:
       get:
