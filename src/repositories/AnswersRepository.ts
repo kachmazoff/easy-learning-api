@@ -11,6 +11,7 @@ export interface IAnswersRepository {
   getAnswersForQuestion(questionId: string): Promise<IAnswer[]>;
   add(dto: ICreateAnswerDTO): Promise<void>;
   search(queryString: string): Promise<IAnswer[]>;
+  getAnswersCountForQuestion(questionId: string): Promise<number>;
 }
 
 export class AnswersRepository implements IAnswersRepository {
@@ -51,5 +52,11 @@ export class AnswersRepository implements IAnswersRepository {
     const sqlQuery = `SELECT * FROM \`${this.TABLE_NAME}\` WHERE data LIKE "%${queryString}%" ORDER BY created DESC`;
     const res = await query<IAnswer[]>(sqlQuery);
     return !!res ? res : [];
+  }
+
+  async getAnswersCountForQuestion(questionId: string) {
+    const sqlQuery = `SELECT COUNT(1) as ansCnt FROM \`${this.TABLE_NAME}\` WHERE question_id='${questionId}'`;
+    const res = await query<{ [key: string]: number }[]>(sqlQuery);
+    return !!res ? res[0]["ansCnt"] : 0;
   }
 }
