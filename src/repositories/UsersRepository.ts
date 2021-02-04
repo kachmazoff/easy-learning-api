@@ -32,7 +32,6 @@ export const UsersRepository: IUsersRepository = {
       `INSERT INTO \`${TABLE_NAME}\` (id, \`username\`, \`password\`, \`email\`) VALUES (?, ?, ?, ?)`,
       [uuidv4(), newUser.username, newUser.password, newUser.email]
     );
-    console.log("inserted:", newUser, res);
   },
   update: async (updatedCard: IUser) => {
     // TODO

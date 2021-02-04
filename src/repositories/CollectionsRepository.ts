@@ -206,7 +206,6 @@ export class CollectionsRepository implements ICollectionsRepository {
     JOIN \`QUESTIONS\` q ON rel.question_id=q.id
     `;
     const res = await query<IQuestion[]>(sqlQuery);
-    console.log(res);
     return !!res ? res : [];
   }
 

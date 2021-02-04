@@ -54,7 +54,6 @@ export class AuthController implements IController {
       // Неверный пароль
       res.sendStatus(400);
     } else {
-      console.log({ TOKEN_EXPIRATION });
       const generatedToken = jwt.sign(
         { userId: userData.id, username: userData.username },
         PRIVATE_KEY,
@@ -81,7 +80,6 @@ export class AuthController implements IController {
       const tokenData = jwt.verify(token, PRIVATE_KEY);
       res.sendStatus(200);
     } catch (error) {
-      console.log(error);
       res.sendStatus(401);
     }
   };
