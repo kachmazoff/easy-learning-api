@@ -1,4 +1,9 @@
-import { IAnswer, ICollectionInfo, IQuestion } from "../models";
+import {
+  IAnswer,
+  ICollectionInfo,
+  IQuestion,
+  ICollectionInfoExtended,
+} from "../models";
 import { ICollectionsRepository } from "src/repositories/CollectionsRepository";
 import {
   ICollectionFull,
@@ -7,7 +12,7 @@ import {
 } from "../dto/Collection";
 
 export interface ICollectionsService {
-  getAll(): Promise<ICollectionInfo[]>;
+  getAll(): Promise<ICollectionInfoExtended[]>;
   getById(id: string): Promise<ICollectionInfo | void>;
   add(dto: ICreateCollectionDTO): Promise<void>;
   search(queryString: string): Promise<ICollectionInfo[]>;
@@ -38,16 +43,28 @@ export interface ICollectionsService {
     questionId: string,
     answersIds: string[]
   ): Promise<void>;
+
+  enrich(collection: ICollectionInfo): Promise<ICollectionInfoExtended>;
 }
 
 export class CollectionsService implements ICollectionsService {
   constructor(private readonly collectionsRepo: ICollectionsRepository) {}
 
-  async getAll(): Promise<ICollectionInfo[]> {
-    const res: ICollectionInfo[] = await this.collectionsRepo.getAll();
+  // TODO: подумать над производительностью
+  async getAll(): Promise<ICollectionInfoExtended[]> {
+    const collections = await this.collectionsRepo.getAll();
+    const enrichedCollections = await Promise.all(
+      collections.map((x) => this.enrich(x))
+    );
 
-    return res;
+    return enrichedCollections;
   }
+
+  // async getAll(): Promise<ICollectionInfo[]> {
+  //   const res: ICollectionInfo[] = await this.collectionsRepo.getAll();
+
+  //   return res;
+  // }
 
   async getById(id: string): Promise<ICollectionInfo | void> {
     return this.collectionsRepo.getById(id);
@@ -117,5 +134,16 @@ export class CollectionsService implements ICollectionsService {
       questionId,
       answersIds
     );
+  }
+
+  async enrich(collection: ICollectionInfo): Promise<ICollectionInfoExtended> {
+    const questionsCount = await this.collectionsRepo.getAttachedQuestionsCount(
+      collection.id
+    );
+
+    return {
+      ...collection,
+      questions_count: questionsCount,
+    };
   }
 }

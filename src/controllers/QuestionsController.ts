@@ -6,8 +6,11 @@ import { QuestionsRepository } from "../repositories/QuestionsRepository";
 import { AnswersService, QuestionsService } from "../services";
 import { AnswersRepository } from "../repositories/AnswersRepository";
 
-const questionsService = new QuestionsService(new QuestionsRepository());
 const answersService = new AnswersService(new AnswersRepository());
+const questionsService = new QuestionsService(
+  new QuestionsRepository(),
+  answersService
+);
 
 export class QuestionsController implements IController {
   public path = "/questions";

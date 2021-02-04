@@ -65,7 +65,6 @@ export class CollectionsController implements IController {
     const id = req.params.id as string;
     const collection = await collectionsService.getById(id);
     if (!collection) {
-      console.log("collection", collection);
       res.sendStatus(404);
     } else {
       res.json(collection);

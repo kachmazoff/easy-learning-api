@@ -50,6 +50,8 @@ export interface ICollectionsRepository {
     questionId: string,
     answersIds: string[]
   ): Promise<void>;
+
+  getAttachedQuestionsCount(collectionId: string): Promise<number>;
 }
 
 export class CollectionsRepository implements ICollectionsRepository {
@@ -204,7 +206,6 @@ export class CollectionsRepository implements ICollectionsRepository {
     JOIN \`QUESTIONS\` q ON rel.question_id=q.id
     `;
     const res = await query<IQuestion[]>(sqlQuery);
-    console.log(res);
     return !!res ? res : [];
   }
 
@@ -306,5 +307,11 @@ export class CollectionsRepository implements ICollectionsRepository {
       const sqlInsertQuery = `INSERT INTO \`${this.REL_COLLECTION_ANSWERS}\` (rel_id, answer_id) VALUES ${insertValues}`;
       await query(sqlInsertQuery);
     }
+  }
+
+  async getAttachedQuestionsCount(collectionId: string) {
+    const sqlQuery = `SELECT COUNT(1) as qCnt FROM \`${this.COLLECTION_QUESTION}\` WHERE collection_id='${collectionId}'`;
+    const res = await query<{ [key: string]: number }[]>(sqlQuery);
+    return !!res ? res[0]["qCnt"] : 0;
   }
 }

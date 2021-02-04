@@ -5,3 +5,7 @@ export interface ICollectionInfo extends BaseEntity {
   description: string;
   author_id: string;
 }
+
+export interface ICollectionInfoExtended extends ICollectionInfo {
+  questions_count: number;
+}

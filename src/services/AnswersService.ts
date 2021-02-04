@@ -8,6 +8,7 @@ export interface IAnswersService {
   getAnswersForQuestion(questionId: string): Promise<IAnswer[]>;
   add(dto: ICreateAnswerDTO): Promise<void>;
   search(queryString: string): Promise<IAnswer[]>;
+  getAnswersCountForQuestion(questionId: string): Promise<number>;
 }
 
 export class AnswersService implements IAnswersService {
@@ -31,5 +32,9 @@ export class AnswersService implements IAnswersService {
 
   async search(queryString: string): Promise<IAnswer[]> {
     return this.answersRepo.search(queryString);
+  }
+
+  async getAnswersCountForQuestion(questionId: string): Promise<number> {
+    return this.answersRepo.getAnswersCountForQuestion(questionId);
   }
 }
