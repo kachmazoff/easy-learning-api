@@ -59,87 +59,154 @@ paths:
         - bearer_auth: []
   '/collections/{collectionId}':
     get:
-        tags:
-          - collections
-        summary: Получение коллекции по ID
-        description: Возвращает модель найденной коллекции
-        parameters:
-        - name: collectionId
-          in: path
-          description: ID коллекции
-          required: true
-          schema:
-            type: string
-            format: uuid
-        responses:
-          '200':
-            description: Успешное получение информации о коллекции
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/CollectionInfo'
-          '404':
-            description: Коллекция не найдена
-            content: {}
+      tags:
+        - collections
+      summary: Получение коллекции по ID
+      description: Возвращает модель найденной коллекции
+      parameters:
+      - name: collectionId
+        in: path
+        description: ID коллекции
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Успешное получение информации о коллекции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionInfo'
+        '404':
+          description: Коллекция не найдена
+          content: {}
   '/collections/{collectionId}/questions':
     get:
-        tags:
-          - collections
-        summary: Получение вопросов коллекции по ID коллекции
-        description: Возвращает массив вопросов, привязанных к коллекции
-        parameters:
-        - name: collectionId
-          in: path
-          description: ID коллекции
-          required: true
-          schema:
-            type: string
-            format: uuid
-        responses:
-          '200':
-            description: Успешное получение информации о коллекции
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Question'
-          '404':
-            description: Коллекция не найдена
-            content: {}
+      tags:
+        - collections
+      summary: Получение вопросов коллекции по ID коллекции
+      description: Возвращает массив вопросов, привязанных к коллекции
+      parameters:
+      - name: collectionId
+        in: path
+        description: ID коллекции
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Успешное получение информации о коллекции
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        '404':
+          description: Коллекция не найдена
+          content: {}
+    post:
+      tags:
+        - collections
+      summary: Привязывание вопросов к коллекции
+      parameters:
+      - name: collectionId
+        in: path
+        description: ID коллекции
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        description: Массив ID вопросов
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                format: uuid
+      responses:
+        '200':
+          description: Успешная привязка вопросов
+          content: {}
+        '500':
+          description: Ошибка сервера
+          content: {}
+      security:
+        - bearer_auth: []
   '/collections/{collectionId}/questions/{questionId}/answers':
     get:
-        tags:
-          - collections
-        summary: Получение выбранных ответов в рамках коллекции
-        description: Возвращает массив ответов на данный вопрос, которые выбраны для данной коллекции
-        parameters:
-        - name: collectionId
-          in: path
-          description: ID коллекции
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: questionId
-          in: path
-          description: ID вопроса
-          required: true
-          schema:
-            type: string
-            format: uuid
-        responses:
-          '200':
-            description: Успешное получение массива ответов
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Answer'
-          '500':
-            description: Ошибка сервера
-            content: {}
+      tags:
+        - collections
+      summary: Получение выбранных ответов в рамках коллекции
+      description: Возвращает массив ответов на данный вопрос, которые выбраны для данной коллекции
+      parameters:
+      - name: collectionId
+        in: path
+        description: ID коллекции
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: questionId
+        in: path
+        description: ID вопроса
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Успешное получение массива ответов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Answer'
+        '500':
+          description: Ошибка сервера
+          content: {}
+    post:
+      tags:
+        - collections
+      summary: Установка активных ответов на вопрос в коллекции
+      parameters:
+      - name: collectionId
+        in: path
+        description: ID коллекции
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: questionId
+        in: path
+        description: ID вопроса
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        description: Массив ID активных ответов
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                format: uuid
+      responses:
+        '200':
+          description: Успешная привязка ответов
+          content: {}
+        '500':
+          description: Ошибка сервера
+          content: {}
+      security:
+        - bearer_auth: []
   /auth/login:
     post:
       tags:
@@ -211,6 +278,32 @@ paths:
           '500':
             description: Ошибка сервера
             content: {}
+      post:
+        tags:
+          - questions
+        summary: Создание вопроса
+        requestBody:
+          description: Обязательные поля модели для вопроса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: 
+                    type: string
+                    description: Формулировка вопроса
+                  description: 
+                    type: string
+                    description: НЕОБЯЗАТЕЛЬНЫЙ комментарий к вопросу
+        responses:
+          '200':
+            description: Успешное создание вопроса
+            content: {}
+          '500':
+            description: Ошибка сервера
+            content: {}
+        security:
+          - bearer_auth: []
   '/questions/{questionId}':
     get:
         tags:
@@ -278,6 +371,36 @@ paths:
           '500':
             description: Ошибка сервера
             content: {}
+      post:
+        tags:
+          - answers
+        summary: Создание нового ответа
+        requestBody:
+          description: Обязательные поля модели для ответа
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: 
+                    type: string
+                    description: Формулировка ответа
+                  description: 
+                    type: string
+                    description: НЕОБЯЗАТЕЛЬНЫЙ комментарий к ответу
+                  question_id:
+                    type: string
+                    format: uuid
+                    description: ID привязанного вопроса
+        responses:
+          '200':
+            description: Успешное создание ответа
+            content: {}
+          '500':
+            description: Ошибка сервера
+            content: {}
+        security:
+          - bearer_auth: []
   '/answers/{answerId}':
     get:
         tags:
