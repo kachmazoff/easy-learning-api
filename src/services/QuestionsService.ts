@@ -9,6 +9,7 @@ export interface IQuestionsService {
   add(dto: ICreateQuestionDTO): Promise<void>;
   search(queryString: string): Promise<IQuestion[]>;
   enrich(question: IQuestion): Promise<IQuestionExtended>;
+  getUnansweredQuestions(): Promise<IQuestion[]>;
 }
 
 export class QuestionsService implements IQuestionsService {
@@ -47,5 +48,9 @@ export class QuestionsService implements IQuestionsService {
       ...question,
       answers_count: answersCount,
     };
+  }
+
+  getUnansweredQuestions(): Promise<IQuestion[]> {
+    return this.questionsRepo.getUnansweredQuestions();
   }
 }

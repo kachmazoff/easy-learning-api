@@ -23,6 +23,7 @@ export class QuestionsController implements IController {
   private initializeRoutes() {
     this.router.get(`${this.path}/`, this.getAllQuestions);
     this.router.get(`${this.path}/search`, this.searchQuestions);
+    this.router.get(`${this.path}/unanswered`, this.getUnansweredQuestions);
     this.router.get(`${this.path}/:id`, this.getQuestionById);
     this.router.get(`${this.path}/:id/answers`, this.getAnswersForQuestion);
     this.router.post(
@@ -69,5 +70,10 @@ export class QuestionsController implements IController {
     const id = req.params.id as string;
     const answers = await answersService.getAnswersForQuestion(id);
     res.json(answers);
+  };
+
+  private getUnansweredQuestions = async (req: Request, res: Response) => {
+    const questions = await questionsService.getUnansweredQuestions();
+    res.json(questions);
   };
 }
