@@ -10,6 +10,7 @@ export interface IQuestionsRepository {
   getById(id: string): Promise<IQuestion | void>;
   add(dto: ICreateQuestionDTO): Promise<void>;
   search(queryString: string): Promise<IQuestion[]>;
+  getUnansweredQuestions(): Promise<IQuestion[]>;
 }
 
 export class QuestionsRepository implements IQuestionsRepository {
@@ -40,6 +41,12 @@ export class QuestionsRepository implements IQuestionsRepository {
   async search(queryString: string) {
     // TODO: возможны проблемы с производительностью. Проверить через EXPLAIN
     const sqlQuery = `SELECT * FROM \`${this.TABLE_NAME}\` WHERE data LIKE "%${queryString}%" ORDER BY created DESC`;
+    const res = await query<IQuestion[]>(sqlQuery);
+    return !!res ? res : [];
+  }
+
+  async getUnansweredQuestions() {
+    const sqlQuery = `SELECT * FROM \`${this.TABLE_NAME}\` WHERE id NOT IN (SELECT DISTINCT question_id FROM \`ANSWERS\`) ORDER BY created DESC`;
     const res = await query<IQuestion[]>(sqlQuery);
     return !!res ? res : [];
   }
