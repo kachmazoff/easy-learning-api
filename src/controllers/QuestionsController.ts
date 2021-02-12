@@ -4,16 +4,19 @@ import { IController } from "./IController";
 import { ICreateQuestionDTO } from "../dto/Question";
 import { QuestionsRepository } from "../repositories/QuestionsRepository";
 import {
+  AnswersListService,
   AnswersService,
   QuestionsListService,
   QuestionsService,
 } from "../services";
 import { AnswersRepository } from "../repositories/AnswersRepository";
 
+const questionsRepo = new QuestionsRepository();
 const answersService = new AnswersService(new AnswersRepository());
-const questionsService = new QuestionsService(new QuestionsRepository());
+const answersListService = new AnswersListService(new AnswersRepository());
+const questionsService = new QuestionsService(questionsRepo);
 const questionsListService = new QuestionsListService(
-  new QuestionsRepository(),
+  questionsRepo,
   answersService
 );
 
@@ -73,7 +76,7 @@ export class QuestionsController implements IController {
 
   private getAnswersForQuestion = async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    const answers = await answersService.getAnswersForQuestion(id);
+    const answers = await answersListService.getAnswersForQuestion(id);
     res.json(answers);
   };
 

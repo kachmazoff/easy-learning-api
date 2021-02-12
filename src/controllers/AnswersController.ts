@@ -3,9 +3,11 @@ import { requiredAuthMiddleware, RequestWithUser } from "../middlewares";
 import { IController } from "./IController";
 import { ICreateAnswerDTO } from "../dto/Answer";
 import { AnswersRepository } from "../repositories/AnswersRepository";
-import { AnswersService } from "../services";
+import { AnswersListService, AnswersService } from "../services";
 
-const answersService = new AnswersService(new AnswersRepository());
+const answersRepo = new AnswersRepository();
+const answersService = new AnswersService(answersRepo);
+const answersListService = new AnswersListService(answersRepo);
 
 export class AnswersController implements IController {
   public path = "/answers";
@@ -27,7 +29,7 @@ export class AnswersController implements IController {
   }
 
   private getAllAnswers = async (req: Request, res: Response) => {
-    res.json(await answersService.getAll());
+    res.json(await answersListService.getAll());
   };
 
   private getAnswerById = async (req: Request, res: Response) => {
@@ -55,7 +57,7 @@ export class AnswersController implements IController {
 
   private searchAnswers = async (req: Request, res: Response) => {
     const { query } = req.query;
-    const answers = await answersService.search(query as string);
+    const answers = await answersListService.search(query as string);
     res.json(answers);
   };
 }
