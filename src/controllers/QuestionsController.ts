@@ -42,7 +42,20 @@ export class QuestionsController implements IController {
   }
 
   private getAllQuestions = async (req: Request, res: Response) => {
-    res.json(await questionsListService.getAll());
+    const { collectionId } = req.query;
+
+    let result;
+    // TODO: validate as uuid
+    if (!!collectionId && typeof collectionId === "string") {
+      // Получение списка вопросов, привязанных к конкретной коллекции
+
+      // TODO: Add meta fields to model. (answers_count)
+      result = await questionsListService.getCollectionQuestions(collectionId);
+    } else {
+      result = await questionsListService.getAll();
+    }
+
+    res.json(result);
   };
 
   private getQuestionById = async (req: Request, res: Response) => {
