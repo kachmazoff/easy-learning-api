@@ -3,11 +3,16 @@ import { requiredAuthMiddleware, RequestWithUser } from "../middlewares";
 import { IController } from "./IController";
 import { ICreateQuestionDTO } from "../dto/Question";
 import { QuestionsRepository } from "../repositories/QuestionsRepository";
-import { AnswersService, QuestionsService } from "../services";
+import {
+  AnswersService,
+  QuestionsListService,
+  QuestionsService,
+} from "../services";
 import { AnswersRepository } from "../repositories/AnswersRepository";
 
 const answersService = new AnswersService(new AnswersRepository());
-const questionsService = new QuestionsService(
+const questionsService = new QuestionsService(new QuestionsRepository());
+const questionsListService = new QuestionsListService(
   new QuestionsRepository(),
   answersService
 );
@@ -34,7 +39,7 @@ export class QuestionsController implements IController {
   }
 
   private getAllQuestions = async (req: Request, res: Response) => {
-    res.json(await questionsService.getAll());
+    res.json(await questionsListService.getAll());
   };
 
   private getQuestionById = async (req: Request, res: Response) => {
@@ -62,7 +67,7 @@ export class QuestionsController implements IController {
 
   private searchQuestions = async (req: Request, res: Response) => {
     const { query } = req.query;
-    const questions = await questionsService.search(query as string);
+    const questions = await questionsListService.search(query as string);
     res.json(questions);
   };
 
@@ -73,7 +78,7 @@ export class QuestionsController implements IController {
   };
 
   private getUnansweredQuestions = async (req: Request, res: Response) => {
-    const questions = await questionsService.getUnansweredQuestions();
+    const questions = await questionsListService.getUnansweredQuestions();
     res.json(questions);
   };
 }
