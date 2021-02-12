@@ -4,4 +4,5 @@ export {
   QuestionsListService,
 } from "./QuestionsListService";
 export { IAnswersService, AnswersService } from "./AnswersService";
+export { IAnswersListService, AnswersListService } from "./AnswersListService";
 export { ICollectionsService, CollectionsService } from "./CollectionsService";
