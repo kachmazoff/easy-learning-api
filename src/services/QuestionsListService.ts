@@ -7,6 +7,7 @@ export interface IQuestionsListService {
   getAll(): Promise<IQuestionExtended[]>;
   search(queryString: string): Promise<IQuestion[]>;
   getUnansweredQuestions(): Promise<IQuestion[]>;
+  getCollectionQuestions(collectionId: string): Promise<IQuestion[]>;
 }
 
 export class QuestionsListService implements IQuestionsListService {
@@ -28,11 +29,15 @@ export class QuestionsListService implements IQuestionsListService {
     return enrichedAnswers;
   }
 
-  async search(queryString: string): Promise<IQuestion[]> {
+  search(queryString: string): Promise<IQuestion[]> {
     return this.questionsRepo.search(queryString);
   }
 
   getUnansweredQuestions(): Promise<IQuestion[]> {
     return this.questionsRepo.getUnansweredQuestions();
+  }
+
+  getCollectionQuestions(collectionId: string) {
+    return this.questionsRepo.getCollectionQuestions(collectionId);
   }
 }
