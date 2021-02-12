@@ -4,7 +4,6 @@ import { IController } from "./IController";
 import { ICreateQuestionDTO } from "../dto/Question";
 import { QuestionsRepository } from "../repositories/QuestionsRepository";
 import {
-  AnswersListService,
   AnswersService,
   QuestionsListService,
   QuestionsService,
@@ -13,7 +12,6 @@ import { AnswersRepository } from "../repositories/AnswersRepository";
 
 const questionsRepo = new QuestionsRepository();
 const answersService = new AnswersService(new AnswersRepository());
-const answersListService = new AnswersListService(new AnswersRepository());
 const questionsService = new QuestionsService(questionsRepo);
 const questionsListService = new QuestionsListService(
   questionsRepo,
@@ -33,7 +31,6 @@ export class QuestionsController implements IController {
     this.router.get(`${this.path}/search`, this.searchQuestions);
     this.router.get(`${this.path}/unanswered`, this.getUnansweredQuestions);
     this.router.get(`${this.path}/:id`, this.getQuestionById);
-    this.router.get(`${this.path}/:id/answers`, this.getAnswersForQuestion);
     this.router.post(
       `${this.path}/`,
       requiredAuthMiddleware,
@@ -85,12 +82,6 @@ export class QuestionsController implements IController {
     const { query } = req.query;
     const questions = await questionsListService.search(query as string);
     res.json(questions);
-  };
-
-  private getAnswersForQuestion = async (req: Request, res: Response) => {
-    const id = req.params.id as string;
-    const answers = await answersListService.getAnswersForQuestion(id);
-    res.json(answers);
   };
 
   private getUnansweredQuestions = async (req: Request, res: Response) => {

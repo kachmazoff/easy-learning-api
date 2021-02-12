@@ -28,10 +28,6 @@ export interface ICollectionsService {
     questionsIds: string[]
   ): Promise<void>;
 
-  getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]>;
   setAnswersForQuestion(
     collectionId: string,
     questionId: string,
@@ -95,16 +91,6 @@ export class CollectionsService implements ICollectionsService {
     return this.collectionsRepo.deleteQuestionsFromCollection(
       collectionId,
       questionsIds
-    );
-  }
-
-  async getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]> {
-    return await this.collectionsRepo.getSelectedAnswersForQuestion(
-      collectionId,
-      questionId
     );
   }
 
