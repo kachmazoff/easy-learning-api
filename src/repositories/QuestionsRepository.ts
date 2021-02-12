@@ -54,10 +54,11 @@ export class QuestionsRepository implements IQuestionsRepository {
   }
 
   async getCollectionQuestions(collectionId: string) {
+    // SELECT q.id AS id,
+    //    q.data AS data,
+    //    q.author_id AS author_id
     const sqlQuery = `
-    SELECT q.id AS id,
-       q.data AS data,
-       q.author_id AS author_id
+    SELECT q.*
     FROM
         (SELECT question_id
         FROM \`${this.COLLECTION_QUESTION}\`
