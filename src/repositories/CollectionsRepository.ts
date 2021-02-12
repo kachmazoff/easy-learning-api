@@ -31,7 +31,6 @@ export interface ICollectionsRepository {
   getFullById(id: string): Promise<ICollectionFull | void>;
   getCollectionQAs(collectionId: string): Promise<IQAPair[]>;
 
-  getCollectionQuestions(collectionId: string): Promise<IQuestion[]>;
   addQuestionsToCollection(
     collectionId: string,
     questionsIds: string[]
@@ -192,21 +191,6 @@ export class CollectionsRepository implements ICollectionsRepository {
     );
 
     const res = await query(sqlQuery);
-  }
-
-  async getCollectionQuestions(collectionId: string) {
-    const sqlQuery = `
-    SELECT q.id AS id,
-       q.data AS data,
-       q.author_id AS author_id
-    FROM
-        (SELECT question_id
-        FROM \`${this.COLLECTION_QUESTION}\`
-        WHERE collection_id='${collectionId}' ORDER BY created DESC) rel
-    JOIN \`QUESTIONS\` q ON rel.question_id=q.id
-    `;
-    const res = await query<IQuestion[]>(sqlQuery);
-    return !!res ? res : [];
   }
 
   async deleteQuestionsFromCollection(

@@ -1,9 +1,4 @@
-import {
-  IAnswer,
-  ICollectionInfo,
-  IQuestion,
-  ICollectionInfoExtended,
-} from "../models";
+import { IAnswer, ICollectionInfo, ICollectionInfoExtended } from "../models";
 import { ICollectionsRepository } from "src/repositories/CollectionsRepository";
 import {
   ICollectionFull,
@@ -24,7 +19,6 @@ export interface ICollectionsService {
   getFullById(id: string): Promise<ICollectionFull | void>;
   getCollectionQAs(collectionId: string): Promise<IQAPair[]>;
 
-  getCollectionQuestions(collectionId: string): Promise<IQuestion[]>;
   addQuestionsToCollection(
     collectionId: string,
     questionsIds: string[]
@@ -60,12 +54,6 @@ export class CollectionsService implements ICollectionsService {
     return enrichedCollections;
   }
 
-  // async getAll(): Promise<ICollectionInfo[]> {
-  //   const res: ICollectionInfo[] = await this.collectionsRepo.getAll();
-
-  //   return res;
-  // }
-
   async getById(id: string): Promise<ICollectionInfo | void> {
     return this.collectionsRepo.getById(id);
   }
@@ -98,10 +86,6 @@ export class CollectionsService implements ICollectionsService {
       collectionId,
       questionsIds
     );
-  }
-
-  async getCollectionQuestions(collectionId: string) {
-    return this.collectionsRepo.getCollectionQuestions(collectionId);
   }
 
   async deleteQuestionsFromCollection(

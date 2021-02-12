@@ -22,7 +22,6 @@ export class CollectionsController implements IController {
     this.router.get(`${this.path}/:id/full`, this.getFullCollection);
     this.router.get(`${this.path}/:id/qas`, this.getQAs);
 
-    this.router.get(`${this.path}/:id/questions`, this.getQuestions);
     this.router.post(
       `${this.path}/:id/questions`,
       requiredAuthMiddleware,
@@ -124,15 +123,6 @@ export class CollectionsController implements IController {
     } catch (error) {
       res.sendStatus(500);
     }
-  };
-
-  private getQuestions = async (req: Request, res: Response) => {
-    const collectionId = req.params.id as string;
-
-    const questions = await collectionsService.getCollectionQuestions(
-      collectionId
-    );
-    res.json(questions);
   };
 
   private addQuestions = async (req: RequestWithUser, res: Response) => {
