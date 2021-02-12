@@ -29,7 +29,24 @@ export class AnswersController implements IController {
   }
 
   private getAllAnswers = async (req: Request, res: Response) => {
-    res.json(await answersListService.getAll());
+    const { collectionId, questionId } = req.query;
+
+    let result;
+    // TODO: validate as uuid
+    if (!!collectionId && !!questionId) {
+      result = await answersListService.getSelectedAnswersForQuestionInCollection(
+        collectionId as string,
+        questionId as string
+      );
+    } else if (!!questionId) {
+      result = await answersListService.getAnswersForQuestion(
+        questionId as string
+      );
+    } else {
+      result = await answersListService.getAll();
+    }
+
+    res.json(result);
   };
 
   private getAnswerById = async (req: Request, res: Response) => {
