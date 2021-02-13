@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import express, { Application } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -27,9 +29,23 @@ export class App {
     return this.app;
   }
 
-  private initializeMiddlewares() {
-    this.app.use(morgan("tiny"));
+  private initializeLogger() {
+    const logsDirectory = path.join(__dirname, "../logs");
 
+    if (!fs.existsSync(logsDirectory)) {
+      fs.mkdirSync(logsDirectory);
+    }
+
+    const logStream = fs.createWriteStream(
+      path.join(logsDirectory, "common.log"),
+      { flags: "a" }
+    );
+
+    this.app.use(morgan("tiny", { stream: logStream }));
+  }
+
+  private initializeMiddlewares() {
+    this.initializeLogger();
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
