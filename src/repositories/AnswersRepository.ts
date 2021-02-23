@@ -12,10 +12,16 @@ export interface IAnswersRepository {
   add(dto: ICreateAnswerDTO): Promise<void>;
   search(queryString: string): Promise<IAnswer[]>;
   getAnswersCountForQuestion(questionId: string): Promise<number>;
+  getSelectedAnswersForQuestionInCollection(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]>;
 }
 
 export class AnswersRepository implements IAnswersRepository {
   TABLE_NAME = "ANSWERS";
+  COLLECTION_QUESTION = "COLLECTION_QUESTION";
+  REL_COLLECTION_ANSWERS = "REL_COLLECTION_ANSWERS";
 
   async getAll() {
     const res = await query<IAnswer[]>(
@@ -58,5 +64,34 @@ export class AnswersRepository implements IAnswersRepository {
     const sqlQuery = `SELECT COUNT(1) as ansCnt FROM \`${this.TABLE_NAME}\` WHERE question_id='${questionId}'`;
     const res = await query<{ [key: string]: number }[]>(sqlQuery);
     return !!res ? res[0]["ansCnt"] : 0;
+  }
+
+  async getSelectedAnswersForQuestionInCollection(
+    collectionId: string,
+    questionId: string
+  ): Promise<IAnswer[]> {
+    const sqlGetRelIds = `SELECT id FROM ${this.COLLECTION_QUESTION} WHERE collection_id='${collectionId}' AND question_id='${questionId}'`;
+    const relations = (await query<{ id: string }[]>(sqlGetRelIds)) || [];
+    const rel_id = relations[0]?.id;
+    if (!rel_id) {
+      throw new Error("Question not in collection");
+    }
+
+    const sqlGetAnswers = `
+      SELECT ans.id AS id,
+        ans.created AS created,
+        ans.data AS data,
+        ans.description AS description,
+        ans.question_id AS question_id,
+        ans.author_id AS author_id
+      FROM
+        (SELECT *
+        FROM ${this.REL_COLLECTION_ANSWERS}
+        WHERE rel_id='${rel_id}') rels
+      JOIN \`${this.TABLE_NAME}\` ans ON rels.answer_id=ans.id
+    `;
+    const answers = await query<IAnswer[]>(sqlGetAnswers);
+
+    return !!answers ? answers : [];
   }
 }

@@ -1,14 +1,10 @@
-import {
-  IAnswer,
-  ICollectionInfo,
-  IQuestion,
-  ICollectionInfoExtended,
-} from "../models";
+import { ICollectionInfo, ICollectionInfoExtended } from "../models";
 import { ICollectionsRepository } from "src/repositories/CollectionsRepository";
 import {
   ICollectionFull,
   ICreateCollectionDTO,
   IQAPair,
+  IUpdateCollectionDTO,
 } from "../dto/Collection";
 
 export interface ICollectionsService {
@@ -24,7 +20,6 @@ export interface ICollectionsService {
   getFullById(id: string): Promise<ICollectionFull | void>;
   getCollectionQAs(collectionId: string): Promise<IQAPair[]>;
 
-  getCollectionQuestions(collectionId: string): Promise<IQuestion[]>;
   addQuestionsToCollection(
     collectionId: string,
     questionsIds: string[]
@@ -34,10 +29,6 @@ export interface ICollectionsService {
     questionsIds: string[]
   ): Promise<void>;
 
-  getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]>;
   setAnswersForQuestion(
     collectionId: string,
     questionId: string,
@@ -45,6 +36,8 @@ export interface ICollectionsService {
   ): Promise<void>;
 
   enrich(collection: ICollectionInfo): Promise<ICollectionInfoExtended>;
+
+  update(dto: IUpdateCollectionDTO): Promise<void>;
 }
 
 export class CollectionsService implements ICollectionsService {
@@ -59,12 +52,6 @@ export class CollectionsService implements ICollectionsService {
 
     return enrichedCollections;
   }
-
-  // async getAll(): Promise<ICollectionInfo[]> {
-  //   const res: ICollectionInfo[] = await this.collectionsRepo.getAll();
-
-  //   return res;
-  // }
 
   async getById(id: string): Promise<ICollectionInfo | void> {
     return this.collectionsRepo.getById(id);
@@ -100,10 +87,6 @@ export class CollectionsService implements ICollectionsService {
     );
   }
 
-  async getCollectionQuestions(collectionId: string) {
-    return this.collectionsRepo.getCollectionQuestions(collectionId);
-  }
-
   async deleteQuestionsFromCollection(
     collectionId: string,
     questionsIds: string[]
@@ -111,16 +94,6 @@ export class CollectionsService implements ICollectionsService {
     return this.collectionsRepo.deleteQuestionsFromCollection(
       collectionId,
       questionsIds
-    );
-  }
-
-  async getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]> {
-    return await this.collectionsRepo.getSelectedAnswersForQuestion(
-      collectionId,
-      questionId
     );
   }
 
@@ -145,5 +118,9 @@ export class CollectionsService implements ICollectionsService {
       ...collection,
       questions_count: questionsCount,
     };
+  }
+
+  async update(dto: IUpdateCollectionDTO): Promise<void> {
+    this.collectionsRepo.update(dto);
   }
 }

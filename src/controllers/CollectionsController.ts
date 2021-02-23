@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { validate as uuidValidate } from "uuid";
 import { requiredAuthMiddleware, RequestWithUser } from "../middlewares";
 import { IController } from "./IController";
-import { ICreateCollectionDTO } from "../dto/Collection";
+import { ICreateCollectionDTO, IUpdateCollectionDTO } from "../dto/Collection";
 import { CollectionsService } from "../services";
 import { CollectionsRepository } from "../repositories/CollectionsRepository";
 
@@ -19,20 +19,20 @@ export class CollectionsController implements IController {
   private initializeRoutes() {
     this.router.get(`${this.path}/`, this.getAllCollections);
     this.router.get(`${this.path}/:id`, this.getCollectionById);
+    this.router.post(
+      `${this.path}/:id`,
+      requiredAuthMiddleware,
+      this.updateCollection
+    );
     this.router.get(`${this.path}/:id/full`, this.getFullCollection);
     this.router.get(`${this.path}/:id/qas`, this.getQAs);
 
-    this.router.get(`${this.path}/:id/questions`, this.getQuestions);
     this.router.post(
       `${this.path}/:id/questions`,
       requiredAuthMiddleware,
       this.addQuestions
     );
 
-    this.router.get(
-      `${this.path}/:id/questions/:questionId/answers`,
-      this.getSelectedAnswers
-    );
     this.router.post(
       `${this.path}/:id/questions/:questionId/answers`,
       requiredAuthMiddleware,
@@ -126,15 +126,6 @@ export class CollectionsController implements IController {
     }
   };
 
-  private getQuestions = async (req: Request, res: Response) => {
-    const collectionId = req.params.id as string;
-
-    const questions = await collectionsService.getCollectionQuestions(
-      collectionId
-    );
-    res.json(questions);
-  };
-
   private addQuestions = async (req: RequestWithUser, res: Response) => {
     const collectionId = req.params.id as string;
     const questionsIds = req.body as string[];
@@ -165,17 +156,6 @@ export class CollectionsController implements IController {
     }
   };
 
-  private getSelectedAnswers = async (req: Request, res: Response) => {
-    const collectionId = req.params.id as string;
-    const questionId = req.params.questionId as string;
-
-    const answers = await collectionsService.getSelectedAnswersForQuestion(
-      collectionId,
-      questionId
-    );
-    res.json(answers);
-  };
-
   private selectAnswersForQuestion = async (
     req: RequestWithUser,
     res: Response
@@ -191,6 +171,21 @@ export class CollectionsController implements IController {
         questionId,
         answersIds
       );
+      res.sendStatus(200);
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(500);
+    }
+  };
+
+  private updateCollection = async (req: RequestWithUser, res: Response) => {
+    const dto = req.body as IUpdateCollectionDTO;
+    if (!dto.id) {
+      dto.id = req.params.id as string;
+    }
+
+    try {
+      collectionsService.update(dto);
       res.sendStatus(200);
     } catch (error) {
       console.error(error);

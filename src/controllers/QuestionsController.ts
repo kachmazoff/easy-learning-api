@@ -3,12 +3,18 @@ import { requiredAuthMiddleware, RequestWithUser } from "../middlewares";
 import { IController } from "./IController";
 import { ICreateQuestionDTO } from "../dto/Question";
 import { QuestionsRepository } from "../repositories/QuestionsRepository";
-import { AnswersService, QuestionsService } from "../services";
+import {
+  AnswersService,
+  QuestionsListService,
+  QuestionsService,
+} from "../services";
 import { AnswersRepository } from "../repositories/AnswersRepository";
 
+const questionsRepo = new QuestionsRepository();
 const answersService = new AnswersService(new AnswersRepository());
-const questionsService = new QuestionsService(
-  new QuestionsRepository(),
+const questionsService = new QuestionsService(questionsRepo);
+const questionsListService = new QuestionsListService(
+  questionsRepo,
   answersService
 );
 
@@ -25,7 +31,6 @@ export class QuestionsController implements IController {
     this.router.get(`${this.path}/search`, this.searchQuestions);
     this.router.get(`${this.path}/unanswered`, this.getUnansweredQuestions);
     this.router.get(`${this.path}/:id`, this.getQuestionById);
-    this.router.get(`${this.path}/:id/answers`, this.getAnswersForQuestion);
     this.router.post(
       `${this.path}/`,
       requiredAuthMiddleware,
@@ -34,7 +39,20 @@ export class QuestionsController implements IController {
   }
 
   private getAllQuestions = async (req: Request, res: Response) => {
-    res.json(await questionsService.getAll());
+    const { collectionId } = req.query;
+
+    let result;
+    // TODO: validate as uuid
+    if (!!collectionId && typeof collectionId === "string") {
+      // Получение списка вопросов, привязанных к конкретной коллекции
+
+      // TODO: Add meta fields to model. (answers_count)
+      result = await questionsListService.getCollectionQuestions(collectionId);
+    } else {
+      result = await questionsListService.getAll();
+    }
+
+    res.json(result);
   };
 
   private getQuestionById = async (req: Request, res: Response) => {
@@ -62,18 +80,12 @@ export class QuestionsController implements IController {
 
   private searchQuestions = async (req: Request, res: Response) => {
     const { query } = req.query;
-    const questions = await questionsService.search(query as string);
+    const questions = await questionsListService.search(query as string);
     res.json(questions);
   };
 
-  private getAnswersForQuestion = async (req: Request, res: Response) => {
-    const id = req.params.id as string;
-    const answers = await answersService.getAnswersForQuestion(id);
-    res.json(answers);
-  };
-
   private getUnansweredQuestions = async (req: Request, res: Response) => {
-    const questions = await questionsService.getUnansweredQuestions();
+    const questions = await questionsListService.getUnansweredQuestions();
     res.json(questions);
   };
 }

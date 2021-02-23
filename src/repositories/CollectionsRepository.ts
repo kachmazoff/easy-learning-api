@@ -5,6 +5,7 @@ import {
   ICreateCollectionDTO,
   ICollectionFull,
   IQAPair,
+  IUpdateCollectionDTO,
 } from "../dto/Collection";
 
 interface IFullQueryResponse {
@@ -31,7 +32,6 @@ export interface ICollectionsRepository {
   getFullById(id: string): Promise<ICollectionFull | void>;
   getCollectionQAs(collectionId: string): Promise<IQAPair[]>;
 
-  getCollectionQuestions(collectionId: string): Promise<IQuestion[]>;
   addQuestionsToCollection(
     collectionId: string,
     questionsIds: string[]
@@ -41,10 +41,6 @@ export interface ICollectionsRepository {
     questionsIds: string[]
   ): Promise<void>;
 
-  getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]>;
   setAnswersForQuestion(
     collectionId: string,
     questionId: string,
@@ -52,6 +48,8 @@ export interface ICollectionsRepository {
   ): Promise<void>;
 
   getAttachedQuestionsCount(collectionId: string): Promise<number>;
+
+  update(dto: IUpdateCollectionDTO): Promise<void>;
 }
 
 export class CollectionsRepository implements ICollectionsRepository {
@@ -76,8 +74,8 @@ export class CollectionsRepository implements ICollectionsRepository {
 
   async add(dto: ICreateCollectionDTO) {
     await query<ICollectionInfo>(
-      `INSERT INTO \`${this.TABLE_NAME}\` (id, \`title\`, \`description\`, author_id) VALUES (?, ?, ?, ?)`,
-      [uuidv4(), dto.title, dto.description, dto.author_id]
+      `INSERT INTO \`${this.TABLE_NAME}\` (id, \`title\`, \`description\`, author_id, cover) VALUES (?, ?, ?, ?, ?)`,
+      [uuidv4(), dto.title, dto.description, dto.author_id, dto.cover || null]
     );
   }
 
@@ -194,21 +192,6 @@ export class CollectionsRepository implements ICollectionsRepository {
     const res = await query(sqlQuery);
   }
 
-  async getCollectionQuestions(collectionId: string) {
-    const sqlQuery = `
-    SELECT q.id AS id,
-       q.data AS data,
-       q.author_id AS author_id
-    FROM
-        (SELECT question_id
-        FROM \`${this.COLLECTION_QUESTION}\`
-        WHERE collection_id='${collectionId}' ORDER BY created DESC) rel
-    JOIN \`QUESTIONS\` q ON rel.question_id=q.id
-    `;
-    const res = await query<IQuestion[]>(sqlQuery);
-    return !!res ? res : [];
-  }
-
   async deleteQuestionsFromCollection(
     collectionId: string,
     questionsIds: string[]
@@ -234,35 +217,6 @@ export class CollectionsRepository implements ICollectionsRepository {
 
     const sqlDeleteQuestions = `DELETE FROM \`${this.COLLECTION_QUESTION}\` WHERE id IN ${relationsArr}`;
     await query(sqlDeleteQuestions);
-  }
-
-  async getSelectedAnswersForQuestion(
-    collectionId: string,
-    questionId: string
-  ): Promise<IAnswer[]> {
-    const sqlGetRelIds = `SELECT id FROM ${this.COLLECTION_QUESTION} WHERE collection_id='${collectionId}' AND question_id='${questionId}'`;
-    const relations = (await query<{ id: string }[]>(sqlGetRelIds)) || [];
-    const rel_id = relations[0]?.id;
-    if (!rel_id) {
-      throw new Error("Question not in collection");
-    }
-
-    const sqlGetAnswers = `
-      SELECT ans.id AS id,
-        ans.created AS created,
-        ans.data AS data,
-        ans.description AS description,
-        ans.question_id AS question_id,
-        ans.author_id AS author_id
-      FROM
-        (SELECT *
-        FROM ${this.REL_COLLECTION_ANSWERS}
-        WHERE rel_id='${rel_id}') rels
-      JOIN ANSWERS ans ON rels.answer_id=ans.id
-    `;
-    const answers = await query<IAnswer[]>(sqlGetAnswers);
-
-    return !!answers ? answers : [];
   }
 
   // TODO: refactoring
@@ -313,5 +267,15 @@ export class CollectionsRepository implements ICollectionsRepository {
     const sqlQuery = `SELECT COUNT(1) as qCnt FROM \`${this.COLLECTION_QUESTION}\` WHERE collection_id='${collectionId}'`;
     const res = await query<{ [key: string]: number }[]>(sqlQuery);
     return !!res ? res[0]["qCnt"] : 0;
+  }
+
+  async update(dto: IUpdateCollectionDTO): Promise<void> {
+    const sqlQuery = `UPDATE \`${this.TABLE_NAME}\` SET title='${
+      dto.title
+    }', description='${dto.description}', ${
+      !!dto.cover ? `cover=${dto.cover} ` : "cover=NULL "
+    }WHERE id='${dto.id}'`;
+
+    await query(sqlQuery);
   }
 }
