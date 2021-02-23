@@ -9,6 +9,7 @@ import {
   CollectionsController,
   QuestionsController,
   StatisticsController,
+  FilesController,
 } from "./controllers";
 
 const PORT = ((process.env.PORT as unknown) as number) || 8080;
@@ -19,6 +20,7 @@ const app = new App([
   new QuestionsController(),
   new CollectionsController(),
   new StatisticsController(),
+  new FilesController(),
 ]);
 
 app.listen(PORT);
