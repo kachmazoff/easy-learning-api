@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { validate as uuidValidate } from "uuid";
 import { requiredAuthMiddleware, RequestWithUser } from "../middlewares";
 import { IController } from "./IController";
-import { ICreateCollectionDTO } from "../dto/Collection";
+import { ICreateCollectionDTO, IUpdateCollectionDTO } from "../dto/Collection";
 import { CollectionsService } from "../services";
 import { CollectionsRepository } from "../repositories/CollectionsRepository";
 
@@ -19,6 +19,11 @@ export class CollectionsController implements IController {
   private initializeRoutes() {
     this.router.get(`${this.path}/`, this.getAllCollections);
     this.router.get(`${this.path}/:id`, this.getCollectionById);
+    this.router.post(
+      `${this.path}/:id`,
+      requiredAuthMiddleware,
+      this.updateCollection
+    );
     this.router.get(`${this.path}/:id/full`, this.getFullCollection);
     this.router.get(`${this.path}/:id/qas`, this.getQAs);
 
@@ -166,6 +171,21 @@ export class CollectionsController implements IController {
         questionId,
         answersIds
       );
+      res.sendStatus(200);
+    } catch (error) {
+      console.error(error);
+      res.sendStatus(500);
+    }
+  };
+
+  private updateCollection = async (req: RequestWithUser, res: Response) => {
+    const dto = req.body as IUpdateCollectionDTO;
+    if (!dto.id) {
+      dto.id = req.params.id as string;
+    }
+
+    try {
+      collectionsService.update(dto);
       res.sendStatus(200);
     } catch (error) {
       console.error(error);

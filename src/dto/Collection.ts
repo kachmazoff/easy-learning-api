@@ -5,6 +5,11 @@ export interface ICreateCollectionDTO {
   description: string;
 
   author_id: string;
+  cover?: string;
+}
+
+export interface IUpdateCollectionDTO extends ICreateCollectionDTO {
+  id: string;
 }
 
 // export interface IQAIds {

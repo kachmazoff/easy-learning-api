@@ -1,9 +1,10 @@
-import { IAnswer, ICollectionInfo, ICollectionInfoExtended } from "../models";
+import { ICollectionInfo, ICollectionInfoExtended } from "../models";
 import { ICollectionsRepository } from "src/repositories/CollectionsRepository";
 import {
   ICollectionFull,
   ICreateCollectionDTO,
   IQAPair,
+  IUpdateCollectionDTO,
 } from "../dto/Collection";
 
 export interface ICollectionsService {
@@ -35,6 +36,8 @@ export interface ICollectionsService {
   ): Promise<void>;
 
   enrich(collection: ICollectionInfo): Promise<ICollectionInfoExtended>;
+
+  update(dto: IUpdateCollectionDTO): Promise<void>;
 }
 
 export class CollectionsService implements ICollectionsService {
@@ -115,5 +118,9 @@ export class CollectionsService implements ICollectionsService {
       ...collection,
       questions_count: questionsCount,
     };
+  }
+
+  async update(dto: IUpdateCollectionDTO): Promise<void> {
+    this.collectionsRepo.update(dto);
   }
 }

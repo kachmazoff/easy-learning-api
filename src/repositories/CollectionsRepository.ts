@@ -5,6 +5,7 @@ import {
   ICreateCollectionDTO,
   ICollectionFull,
   IQAPair,
+  IUpdateCollectionDTO,
 } from "../dto/Collection";
 
 interface IFullQueryResponse {
@@ -47,6 +48,8 @@ export interface ICollectionsRepository {
   ): Promise<void>;
 
   getAttachedQuestionsCount(collectionId: string): Promise<number>;
+
+  update(dto: IUpdateCollectionDTO): Promise<void>;
 }
 
 export class CollectionsRepository implements ICollectionsRepository {
@@ -71,8 +74,8 @@ export class CollectionsRepository implements ICollectionsRepository {
 
   async add(dto: ICreateCollectionDTO) {
     await query<ICollectionInfo>(
-      `INSERT INTO \`${this.TABLE_NAME}\` (id, \`title\`, \`description\`, author_id) VALUES (?, ?, ?, ?)`,
-      [uuidv4(), dto.title, dto.description, dto.author_id]
+      `INSERT INTO \`${this.TABLE_NAME}\` (id, \`title\`, \`description\`, author_id, cover) VALUES (?, ?, ?, ?, ?)`,
+      [uuidv4(), dto.title, dto.description, dto.author_id, dto.cover || null]
     );
   }
 
@@ -264,5 +267,15 @@ export class CollectionsRepository implements ICollectionsRepository {
     const sqlQuery = `SELECT COUNT(1) as qCnt FROM \`${this.COLLECTION_QUESTION}\` WHERE collection_id='${collectionId}'`;
     const res = await query<{ [key: string]: number }[]>(sqlQuery);
     return !!res ? res[0]["qCnt"] : 0;
+  }
+
+  async update(dto: IUpdateCollectionDTO): Promise<void> {
+    const sqlQuery = `UPDATE \`${this.TABLE_NAME}\` SET title='${
+      dto.title
+    }', description='${dto.description}', ${
+      !!dto.cover ? `cover=${dto.cover} ` : "cover=NULL "
+    }WHERE id='${dto.id}'`;
+
+    await query(sqlQuery);
   }
 }
